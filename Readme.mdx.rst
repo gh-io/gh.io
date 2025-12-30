@@ -3,11 +3,13 @@ tittle: # docs.
 name: gh.io
 Note: reStructuredText
 contents: 
----
-
+--- 
+ 
 ====================
  |reStructuredText|
 ====================
+ 
+	
 -------------------------------------------------
  Markup Syntax and Parser Component of Docutils_
 -------------------------------------------------
