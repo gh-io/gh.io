@@ -1,0 +1,48 @@
+name: Validate and update profile
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "23 5 * * 1"
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+  update-profile:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Update generated profile sections
+        env:
+          BLOG_FEED_URL: ${{ vars.BLOG_FEED_URL }}
+          BLOG_MAX_POSTS: "5"
+        run: python scripts/update_readme.py
+      - name: Commit changes when needed
+        run: |
+          if git diff --quiet; then
+            echo "No profile changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/profile/README.md
+          git commit -m "chore: refresh generated profile sections"
+          git push
